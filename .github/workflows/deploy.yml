@@ -1,0 +1,27 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main  # Trigger deploy on push to main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up SSH key
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: SSH into server and update code
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@3.120.235.127 "
+          cd /home/ubuntu/pushuptracker &&
+          git pull origin main &&
+          # Restart gunicorn or other app processes
+          systemctl restart gunicorn
+        "

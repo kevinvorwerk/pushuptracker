@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Push-up Tracker</title>
+   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <style>
+       /* Basic styling for header */
+       .header {
+           background-color: #2c3e50;
+           color: white;
+           padding: 5px; /* Reduced padding */
+           text-align: center;
+       }
+       .header h1 {
+           font-size: 1.5em; /* Smaller font size for title */
+           margin: 0; /* Remove margin for a more compact look */
+       }
+       .header p {
+           margin: 0; /* Compact look */
+       }
+
+       /* Styling for the content wrapper */
+       .content-wrapper {
+           padding: 20px; /* Padding around the content */
+           max-width: 800px; /* Optional: limit width for better layout */
+           margin: 0 auto; /* Center the wrapper */
+           background-color: #fff; /* Background for content area */
+           border-radius: 5px; /* Rounded corners */
+           box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Slight shadow for depth */
+       }
+   </style>
+</head>
+<body>
+
+   <div class="header">
+       <h1>Push-up Tracker</h1>
+       <p>Logged in as: {{ session['username'] }}</p>
+       <a href="/logout">Logout</a>
+   </div>
+
+   <div class="content-wrapper">
+
+       <!-- Flash Messages Section -->
+       {% with messages = get_flashed_messages() %}
+           {% if messages %}
+               <ul class="flashes">
+                   {% for message in messages %}
+                       <li>{{ message }}</li>
+                   {% endfor %}
+               </ul>
+           {% endif %}
+       {% endwith %}
+
+       <form method="POST" action="/add">
+           <h3>Add Entry</h3>
+           <input type="date" name="date" value="{{ today }}" required>
+           <input type="number" name="target" placeholder="Target" required>
+           <input type="number" name="done" placeholder="Done" required>
+           
+           <button type="submit">Add</button>
+       </form>
+      
+       <h3>Your Push-up Entries</h3>
+       <ul>
+           {% for entry in user_entries %}
+               <li>
+		   <p>
+		   {{ entry[2] }} - Target: {{ entry[3] }} - Done: {{ entry[4] }} 
+                   (User: {{ session['username'] }})
+		   </p>
+                   <form method="POST" action="/fix" style="display:inline;">
+                       <input type="number" name="done" placeholder="Adjust Done">
+                       <input type="hidden" name="date" value="{{ entry[2] }}">
+                       <button type="submit">Fix</button>
+                   </form>
+		    <form method="POST" action="/delete_entry" style="display:inline;">
+                       <input type="hidden" name="date" value="{{ entry[2] }}">
+                       <input type="hidden" name="user_id" value="{{ entry[1] }}"> <!-- User ID for validation -->
+                       <button type="submit">X</button>
+                   </form>
+               </li>
+           {% endfor %}
+       </ul>
+
+       <h3>All Push-up Entries</h3>
+       <ul>
+           {% for entry in all_entries %}
+               <li>User Name: {{ entry[5] }} - Date: {{ entry[2] }} - Target: {{ entry[3] }} - Done: {{ entry[4] }}
+               </li>
+           {% endfor %}
+       </ul>
+
+
+       <form method="POST" action="/select_user" style="text-align: center; margin: 20px auto;">
+   <label for="selected_user">Select User for Comparison:</label>
+   <select id="selected_user" name="selected_user">
+       <option value="">Select User</option>
+       {% for user in all_users %}
+           <option value="{{ user[0] }}"
+               {% if user[0] == (selected_user|int) %}
+                   selected
+               {% endif %}>
+               {{ user[1] }}
+           </option>
+       {% endfor %}
+   </select>
+   <button type="submit">Show</button>
+</form>
+
+
+
+<canvas id="pushupChart"></canvas>
+
+<script>
+   const ctx = document.getElementById('pushupChart').getContext('2d');
+
+   const data = {
+       labels: [
+           {% for entry in user_entries %}
+               '{{ entry[2] }}'{{ "," if not loop.last }}
+           {% endfor %}
+       ],
+       datasets: [
+       {
+           label: 'Your Daily Push Ups',
+           data: [
+               {% for entry in user_entries %}
+                   {{ entry[4] }}{{ "," if not loop.last }}
+               {% endfor %}
+           ],
+           borderColor: 'rgba(75, 192, 192, 1)',
+           backgroundColor: 'rgba(75, 192, 192, 0.2)',
+           borderWidth: 1
+       }, 
+       {
+           label: '{{ session["selected_username"] | default("Challenging User") }} Daily Push Ups',
+           data: [
+               {% for entry in all_entries %}
+                   {% if entry[1] == (session['selected_user'] | default(0, true) | int) %}
+                       {{ entry[4] }}{{ "," if not loop.last }}
+                   //{% else %}
+                   //   0{{ "," if not loop.last }}
+                   {% endif %}
+               {% endfor %}
+           ],
+           borderColor: 'rgba(255, 99, 132, 1)',
+           backgroundColor: 'rgba(255, 99, 132, 0.2)',
+           borderWidth: 1
+       }, 
+       {
+           label: 'Target Push Ups',
+           data: [
+               {% for entry in user_entries %}
+                   {{ entry[3] }}{{ "," if not loop.last }}
+               {% endfor %}
+           ],
+           borderColor: 'rgba(255, 205, 86, 1)',
+           backgroundColor: 'rgba(255, 205, 86, 0.2)',
+           borderWidth: 1,
+           borderDash: [5, 5]  // Dashed line for target
+       }]
+   };
+
+   // Console logs for debugging
+   console.log("Selected User ID: ", "{{ session['selected_user'] }}");
+   console.log("All Entries: ", {% if all_entries | length > 0 %}{{ all_entries | tojson }}{% else %}[]{% endif %}); // Print all entries
+   console.log("Your Daily Push Ups: ", data.datasets[0].data);
+   console.log("Challenging User Daily Push Ups: ", data.datasets[1].data);
+
+   const config = {
+       type: 'line',
+       data: data,
+       options: {
+           responsive: true,
+           scales: {
+               y: {
+                   beginAtZero: true,
+                   ticks: {
+                       stepSize: 1  // More compact on the Y-axis
+                   }
+               }
+           }
+       }
+   };
+
+   const pushupChart = new Chart(ctx, config);
+</script>
+
+
+
+   </div>
+
+</body>
+</html>

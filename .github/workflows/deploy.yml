@@ -30,7 +30,6 @@ jobs:
           echo "SSH connection established on $(date)";
           cd /home/ubuntu/pushuptracker &&
           git pull origin main &&
-          # Uncomment the following lines to restart your service
-          # systemctl restart gunicorn
+          sudo systemctl status gunicorn.service
           echo "Deployment commands executed."
         '

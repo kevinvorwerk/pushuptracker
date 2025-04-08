@@ -17,12 +17,20 @@ jobs:
           USER_NAME: ${{secrets.EC2_USER}}
       
       run: |
-        echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+        echo "Setting up the SSH key..."
+        # Write out the SSH key from the secret to a file
+        echo "$PRIVATE_KEY" > private_key
+        chmod 600 private_key
+        # Verify that the key file has content (for debugging, remove later)
+        ls -l private_key
+        cat private_key | head -n 3
+        
+        echo "Connecting to the server..."
         ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-
-          echo "HHALLO"
-          # cd /home/ubuntu/pushuptracker &&
-          # git pull origin main &&
-          # Restart gunicorn or other app processes
+          echo "SSH connection established on $(date)";
+          cd /home/ubuntu/pushuptracker &&
+          git pull origin main &&
+          # Uncomment the following lines to restart your service
           # systemctl restart gunicorn
+          echo "Deployment commands executed."
         '

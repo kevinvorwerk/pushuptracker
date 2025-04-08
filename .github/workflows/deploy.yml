@@ -23,8 +23,9 @@ jobs:
         EC2_USER: ${{ secrets.EC2_USER}}
       run: |
         ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST "
-          cd /home/ubuntu/pushuptracker &&
-          git pull origin main &&
+          echo "HHALLO"
+          # cd /home/ubuntu/pushuptracker &&
+          # git pull origin main &&
           # Restart gunicorn or other app processes
-          systemctl restart gunicorn
+          # systemctl restart gunicorn
         "

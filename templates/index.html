@@ -28,138 +28,183 @@
            {% endif %}
        {% endwith %}
 
-       <form method="POST" action="/add">
+       <!-- Add Entry Box -->
+       <form method="POST" action="/add" class="box-form">
            <h3>Add Entry</h3>
            <input type="date" name="date" value="{{ today }}" required>
            <input type="number" name="target" placeholder="Target" required>
            <input type="number" name="done" placeholder="Done" required>
-           
            <button type="submit">Add</button>
        </form>
       
+       <!-- User Entry History -->
        <h3>Your Push-up Entries</h3>
        <ul>
            {% for entry in user_entries %}
-               <li>
-		   <p>
-		   {{ entry[2] }} - Target: {{ entry[3] }} - Done: {{ entry[4] }} 
-                   (User: {{ session['username'] }})
-		   </p>
-                   <form method="POST" action="/fix" style="display:inline;">
-                       <input type="number" name="done" placeholder="Adjust Done">
-                       <input type="hidden" name="date" value="{{ entry[2] }}">
-                       <button type="submit">Fix</button>
-                   </form>
-		    <form method="POST" action="/delete_entry" style="display:inline;">
-                       <input type="hidden" name="date" value="{{ entry[2] }}">
-                       <input type="hidden" name="user_id" value="{{ entry[1] }}"> <!-- User ID for validation -->
-                       <button type="submit">X</button>
-                   </form>
+               <li class="entry">
+		            <p>
+		                {{ entry[2] }} - Target: {{ entry[3] }} - Done: {{ entry[4] }} 
+                        (User: {{ session['username'] }})
+		            </p>
+                    <form method="POST" class="change-form" action="/fix">
+                        <input type="number" name="done" placeholder="Adjust Done">
+                        <input type="hidden" name="date" value="{{ entry[2] }}">
+                        <button type="submit">Fix</button>
+                    </form>
+		            <form method="POST" class="delete-form" action="/delete_entry">
+                        <input type="hidden" name="date" value="{{ entry[2] }}">
+                        <input type="hidden" name="user_id" value="{{ entry[1] }}"> <!-- User ID for validation -->
+                        <button type="submit">X</button>
+                    </form>
                </li>
            {% endfor %}
-       </ul>
+        </ul>
 
-       <h3>All Push-up Entries</h3>
-       <ul>
-           {% for entry in all_entries %}
-               <li>User Name: {{ entry[5] }} - Date: {{ entry[2] }} - Target: {{ entry[3] }} - Done: {{ entry[4] }}
-               </li>
-           {% endfor %}
-       </ul>
+        <!-- Comparison Section -->
+        <h3>All Push-up Entries</h3>
+        <ul>
+            {% for entry in all_entries %}
+                <li>User Name: {{ entry[5] }} - Date: {{ entry[2] }} - Target: {{ entry[3] }} - Done: {{ entry[4] }}
+                </li>
+            {% endfor %}
+        </ul>
 
+        <!-- Comparison Partner Selection -->
+        <form method="POST" action="/select_user" class="box-form">
+            <label for="selected_partner">Comparison Partner:</label>
+            <select id="selected_partner" name="selected_partner">
+                <option value="">Select User</option>
+                {% for user in all_users %}
+                    <option value="{{ user[0] }}"
+                    {% if user[0] == (selected_partner|int) %}
+                        selected
+                    {% endif %}>
+                    {{ user[1] }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="submit">Show</button>
+        </form>
 
-       <form method="POST" action="/select_user" style="text-align: center; margin: 20px auto;">
-   <label for="selected_partner">Select User for Comparison:</label>
-   <select id="selected_partner" name="selected_partner">
-       <option value="">Select User</option>
-       {% for user in all_users %}
-           <option value="{{ user[0] }}"
-               {% if user[0] == (selected_partner|int) %}
-                   selected
-               {% endif %}>
-               {{ user[1] }}
-           </option>
-       {% endfor %}
-   </select>
-   <button type="submit">Show</button>
-</form>
+        <!-- Data Range Selection -->
+        <form method="GET" action="/" class="date-form">
 
-<form method="GET" action="/">
-    <label for="start">Start Date:</label>
-    <input type="date" id="start" name="start_date" value="{{ start_date }}">
+            <select id="preset_dates" name="preset_dates" onchange="updateDatesFromPreset()">
+                <option value="7" {{ 'selected' if preset_dates == '7' }}>Last 7 Days</option>
+                <option value="14" {{ 'selected' if preset_dates == '14' }}>Last 14 Days</option>
+                <option value="30" {{ 'selected' if preset_dates == '30' }}>Last 30 Days</option>
+                <option value="90" {{ 'selected' if preset_dates == '90' }}>Last 90 Days</option>
+                <option value="" {{ 'selected' if preset_dates == '' }}>Custom</option>
+            </select>
 
-    <label for="end">End Date:</label>
-    <input type="date" id="end" name="end_date" value="{{ end_date }}">
+            <label for="start"></label>
+            <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
 
-    <button type="submit">Update</button>
-</form>
+            <label for="end">-</label>
+            <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
 
-<canvas id="pushupChart"></canvas>
+            <button type="submit">Update</button>
+        </form>
 
-<script>
-   const ctx = document.getElementById('pushupChart').getContext('2d');
+        <script>
+            function updateDatesFromPreset() {
+                const preset = document.getElementById("preset_dates").value;
+                if (!preset) return;
+            
+                const today = new Date();
+                const endDate = new Date(today);
+                const startDate = new Date(today);
+                startDate.setDate(today.getDate() - parseInt(preset) + 1);  // include today
+            
+                document.getElementById("end_date").value = endDate.toISOString().split("T")[0];
+                document.getElementById("start_date").value = startDate.toISOString().split("T")[0];
+            }
 
-   const dataLabels = {{ data_range | tojson }};
-   const userPushups = {{ user_pushups | tojson }};
-   const targetPushups = {{ target_pushups | tojson }};
-   const partnerPushups = {{ partner_pushups | tojson }};
+            // 👇 Automatically switch to "Custom" if user manually changes a date
+            document.addEventListener("DOMContentLoaded", function () {
+                document.getElementById("start_date").addEventListener("change", function () {
+                    document.getElementById("preset_dates").value = "";
+                });
 
-   const data = {
-       labels: dataLabels,
-       datasets: [
-       {
-           label: 'Your Daily Push Ups',
-           data: userPushups,
-           borderColor: 'rgba(75, 192, 192, 1)',
-           backgroundColor: 'rgba(75, 192, 192, 0.2)',
-           borderWidth: 1
-       }, 
-       {
-           label: 'Target Push Ups',
-           data: targetPushups,
-           borderColor: 'rgba(255, 205, 86, 1)',
-           backgroundColor: 'rgba(255, 205, 86, 0.2)',
-           borderWidth: 1,
-           borderDash: [5, 5]  // Dashed line for target
-       }, 
-       {
-           label: '{{ session["selected_partnername"] | default("Partner") }} Daily Push Ups',
-           data: partnerPushups,
-           borderColor: 'rgba(255, 99, 132, 1)',
-           backgroundColor: 'rgba(255, 99, 132, 0.2)',
-           borderWidth: 1
-       }]
-   };
+                document.getElementById("end_date").addEventListener("change", function () {
+                    document.getElementById("preset_dates").value = "";
+                });
+            });
+        </script>
 
-   // Console logs for debugging
-   console.log("Selected User ID: ", "{{ session['selected_partner'] }}");
-   console.log("All Entries: ", {% if all_entries | length > 0 %}{{ all_entries | tojson }}{% else %}[]{% endif %}); // Print all entries
-   console.log("Your Daily Push Ups: ", userPushups);
-   console.log("Target Daily Push Ups: ", targetPushups);
-   console.log("Partner Daily Push Ups: ", partnerPushups);
-   
-   console.log("Date Range:", dataLabels);
+        <!-- Chart Section -->
+        <canvas id="pushupChart"></canvas>
 
-   const config = {
-       type: 'bar',
-       data: data,
-       options: {
-           responsive: true,
-           scales: {
-               y: {
-                   beginAtZero: true,
-                   ticks: {
-                       stepSize: 1  // More compact on the Y-axis
-                   }
-               }
-           }
-       }
-   };
+        <script>
+            const ctx = document.getElementById('pushupChart').getContext('2d');
 
-   const pushupChart = new Chart(ctx, config);
-</script>
+            const dataLabels = {{ data_range | tojson }};
+            const userPushups = {{ user_pushups | tojson }};
+            const targetPushups = {{ target_pushups | tojson }};
+            const partnerPushups = {{ partner_pushups | tojson }};
 
+            const data = {
+                labels: dataLabels,
+                datasets: [
+                {
+                    label: 'Your Daily Push Ups',
+                    data: userPushups,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 1
+                }, 
+                {
+                    label: 'Target Push Ups',
+                    data: targetPushups,
+                    borderColor: 'rgba(255, 205, 86, 1)',
+                    backgroundColor: 'rgba(255, 205, 86, 0.2)',
+                    borderWidth: 1,
+                    borderDash: [5, 5]  // Dashed line for target
+                }, 
+                {
+                    label: '{{ session["selected_partnername"] | default("Partner") }} Daily Push Ups',
+                    data: partnerPushups,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderWidth: 1
+                }]
+            };
 
+            // Console logs for debugging
+            console.log("Selected User ID: ", "{{ session['selected_partner'] }}");
+            console.log("All Entries: ", {% if all_entries | length > 0 %}{{ all_entries | tojson }}{% else %}[]{% endif %}); // Print all entries
+            console.log("Your Daily Push Ups: ", userPushups);
+            console.log("Target Daily Push Ups: ", targetPushups);
+            console.log("Partner Daily Push Ups: ", partnerPushups);
+            
+            console.log("Date Range:", dataLabels);
+
+            const config = {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        layout: {
+                            padding: {
+                                top: 20,
+                                bottom: 20,
+                                left: 30,
+                                right: 30
+                            }
+                        },
+                        scales: {
+                            y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1  // More compact on the Y-axis
+                            }
+                            }
+                        }
+                    }
+                };
+
+            const pushupChart = new Chart(ctx, config);
+        </script>
 
    </div>
 

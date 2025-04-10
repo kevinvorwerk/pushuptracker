@@ -33,7 +33,7 @@ def index():
     today = datetime.today().date()
 
     # Get the date range from the request or default to the last 30 days
-    start_date, end_date, date_range = get_date_range_from_request(request)
+    start_date, end_date, preset_dates, date_range = get_date_range_from_request(request)
     print("Date Range:", date_range)
 
     # Safe access to session attribute, defaults to None if not set
@@ -55,8 +55,12 @@ def index():
         cursor.execute("SELECT * FROM pushups WHERE user_id = ?", (session['user_id'],))
         user_entries = cursor.fetchall()
 
-        cursor.execute("SELECT * FROM pushups WHERE user_id = ?", selected_partner_id)
-        partner_entries = cursor.fetchall()
+        # If a partner is selected, fetch their entries
+        if selected_partner_id:
+            cursor.execute("SELECT * FROM pushups WHERE user_id = ?", selected_partner_id)
+            partner_entries = cursor.fetchall()
+        else:
+            partner_entries = []
 
     # Convert entries to dicts keyed by date
     user_pushups = {entry[2]: entry[4] for entry in user_entries if start_date.strftime('%Y-%m-%d') <= entry[2] <= end_date.strftime('%Y-%m-%d')}
@@ -85,6 +89,7 @@ def index():
                            all_users=all_users, 
                            user_entries=user_entries, 
                            all_entries=all_entries,
+                           preset_dates=preset_dates,
                            selected_partner=selected_partner_id)  # Pass the selected user to the template
 
 
@@ -190,45 +195,46 @@ def delete_entry():
 
 @app.route('/select_user', methods=['POST'])
 def select_user():
-   if 'user_id' not in session:
-       return redirect('/login')
+    if 'user_id' not in session:
+        return redirect('/login')
 
-   selected_partner_id = request.form['selected_partner']
+    selected_partner_id = request.form['selected_partner']
 
-   with sqlite3.connect(DATABASE) as conn:
-       cursor = conn.cursor()
+    with sqlite3.connect(DATABASE) as conn:
+        cursor = conn.cursor()
        
-       # Get the selected user's username for display purposes
-       cursor.execute("SELECT username FROM users WHERE id = ?", (selected_partner_id,))
-       selected_partner = cursor.fetchone()
+        # Get the selected user's username for display purposes
+        cursor.execute("SELECT username FROM users WHERE id = ?", (selected_partner_id,))
+        selected_partner = cursor.fetchone()
 
-       # Store the selected user in the session
-       session['selected_partner'] = selected_partner_id
-       if selected_partner:
-           session['selected_partnername'] = selected_partner[0]  # Store the username
+        # Store the selected user in the session
+        session['selected_partner'] = selected_partner_id
+        if selected_partner:
+            session['selected_partnername'] = selected_partner[0]  # Store the username
 
-       cursor.execute("SELECT * FROM users")
-       all_users = cursor.fetchall()
+        cursor.execute("SELECT * FROM users")
+        all_users = cursor.fetchall()
 
-       cursor.execute("""
-           SELECT pushups.*, users.username 
-           FROM pushups
-           JOIN users ON pushups.user_id = users.id
-           WHERE user_id = ? OR user_id = ?
-       """, (session['user_id'], selected_partner_id))  # Fetch both users' entries
-       all_entries = cursor.fetchall()
+        cursor.execute("""
+            SELECT pushups.*, users.username 
+            FROM pushups
+            JOIN users ON pushups.user_id = users.id
+            WHERE user_id = ? OR user_id = ?
+            """, (session['user_id'], selected_partner_id))  # Fetch both users' entries
+        all_entries = cursor.fetchall()
        
-       cursor.execute("SELECT * FROM pushups WHERE user_id = ?", (session['user_id'],))
-       user_entries = cursor.fetchall()
+        cursor.execute("SELECT * FROM pushups WHERE user_id = ?", (session['user_id'],))
+        user_entries = cursor.fetchall()
 
-   return redirect('/')  # Redirect back to the home page
+    return redirect('/')  # Redirect back to the home page
 
 
 def get_date_range_from_request(request, default_days=7):
 
     # Get date range from request args or default to last 7 days
-    end_date_str = request.args.get("end_date")
+    end_date_str   = request.args.get("end_date")
     start_date_str = request.args.get("start_date")
+    preset_dates   = request.args.get("preset_dates", "")
 
     try:
         end_date = datetime.strptime(end_date_str, "%Y-%m-%d") if end_date_str else datetime.today()
@@ -236,9 +242,9 @@ def get_date_range_from_request(request, default_days=7):
         end_date = datetime.today()
 
     try:
-        start_date = datetime.strptime(start_date_str, "%Y-%m-%d") if start_date_str else end_date - timedelta(days=29)
+        start_date = datetime.strptime(start_date_str, "%Y-%m-%d") if start_date_str else end_date - timedelta(days=default_days)
     except:
-        start_date = end_date - timedelta(days=29)
+        start_date = end_date - timedelta(days=default_days)
 
     # Ensure proper ordering
     if start_date > end_date:
@@ -248,7 +254,7 @@ def get_date_range_from_request(request, default_days=7):
     date_range = [(start_date + timedelta(days=i)).strftime('%Y-%m-%d')
                   for i in range((end_date - start_date).days + 1)]
     
-    return start_date, end_date, date_range
+    return start_date, end_date, preset_dates, date_range
 
 
 if __name__ == '__main__':

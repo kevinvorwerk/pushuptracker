@@ -9,31 +9,47 @@ body {
 }
 
 .content-wrapper {
-   padding: 20px; /* Padding around the content */
-   max-width: 800px; /* Optional: limit width for better layout */
-   margin: 0 auto; /* Center the wrapper */
-   background-color: #fff; /* Background for content area */
-   border-radius: 5px; /* Rounded corners */
-   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
+   padding: 20px;
+   max-width: 800px;
+   background-color: #fff;
+   border-radius: 5px;
+   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+   margin-bottom: 20px;
+   margin-right: auto;
+   margin-left: auto;
 }
 
 .header {
    background-color: #6c7175;
    color: white;
-   padding: 10px;
-   text-align: center; /* Center-align header text */
+   padding: 20px;
+   text-align: center;
 }
 
 .header h1 {
-   font-size: 1.5em; /* Smaller font size for title */
-   margin: 0; /* Remove default margin for a more compact look */
+   font-size: 1.5em;
+   margin: 0;
 }
 
 .header p {
-   margin: 0; /* Compact look */
+   margin: 0;
 }
 
-form {
+input[type="text"],
+input[type="password"],
+input[type="date"],
+input[type="number"],
+select {
+   font-size: 14px;
+   font: 500;
+   font-family: Arial, Helvetica, sans-serif;
+   padding: 5px;
+   margin-bottom: 10px;
+   border: 1px solid #ccc;
+   border-radius: 5px;
+}
+
+.box-form {
    max-width: 300px;
    margin: 20px auto;
    padding: 10px;
@@ -42,19 +58,18 @@ form {
    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-input[type="text"],
-input[type="password"],
-input[type="date"],
-input[type="number"] {
+.box-form input[type="text"],
+.box-form input[type="password"],
+.box-form input[type="date"],
+.box-form input[type="number"] {
    width: calc(100% - 10px);
-   padding: 5px;
-   margin-bottom: 10px;
-   border: 1px solid #ccc;
-   border-radius: 5px;
+}
+
+.box-form button{
+   width: 100%;
 }
 
 button {
-   width: 100%;
    padding: 10px;
    border: none;
    background-color: #2ecc71;
@@ -94,6 +109,50 @@ ul li {
    border-radius: 5px;
    display: flex;
    justify-content: space-between;
+}
+
+.entry {
+   justify-content: right;
+ }
+
+.entry p {
+   padding-left: 10px;
+   padding-right: 10px;
+   margin-top: auto;
+   margin-bottom: auto;
+   display: table-cell;
+   vertical-align: middle;
+ }
+
+ .change-form, .delete-form {
+   margin-top: 0px;
+   margin-bottom: 0px;
+   margin-right: 0px;
+   margin-left: 10px;
+   display: flex;
+   justify-content: right;
+   padding: 10px;
+ }
+
+ .change-form input {
+   margin: 0;
+ }
+
+ .change-form button {
+   width: auto;
+   margin-left: 10px;
+ }
+
+#selected_partner {
+   margin-bottom: 10px;
+   padding: 5px;
+   border: 1px solid #ccc;
+   border-radius: 5px;
+}
+
+.date-form {
+   display: inline;
+   margin-bottom: 10px;
 }
 
 a {

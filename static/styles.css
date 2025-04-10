@@ -112,6 +112,7 @@ ul li {
 }
 
 .entry {
+   display: flex;
    justify-content: right;
  }
 
@@ -132,6 +133,27 @@ ul li {
    display: flex;
    justify-content: right;
    padding: 10px;
+ }
+
+ @media only screen and (max-width: 768px) {
+   .entry {
+      display: block;
+    }
+
+   .entry p {
+      width: 100%;
+      text-align: center;
+   }
+
+   .change-form, .delete-form {
+      margin-top: 0px;
+      margin-bottom: 0px;
+      margin-right: 0px;
+      margin-left: 00px;
+      display: flex;
+      justify-content: left;
+      padding: 10px;
+    }
  }
 
  .change-form input {

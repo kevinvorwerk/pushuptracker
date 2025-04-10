@@ -35,6 +35,9 @@ def index():
     # Get the date range from the request or default to the last 30 days
     start_date, end_date, date_range = get_date_range_from_request(request)
     print("Date Range:", date_range)
+
+    # Safe access to session attribute, defaults to None if not set
+    selected_partner_id = session.get('selected_partner', None)
    
     # Get the database entries
     with sqlite3.connect(DATABASE) as conn:
@@ -52,19 +55,15 @@ def index():
         cursor.execute("SELECT * FROM pushups WHERE user_id = ?", (session['user_id'],))
         user_entries = cursor.fetchall()
 
-    # Safe access to session attribute, defaults to None if not set
-    selected_partner_id = session.get('selected_partner', None)
+        cursor.execute("SELECT * FROM pushups WHERE user_id = ?", selected_partner_id)
+        partner_entries = cursor.fetchall()
 
     # Convert entries to dicts keyed by date
     user_pushups = {entry[2]: entry[4] for entry in user_entries if start_date.strftime('%Y-%m-%d') <= entry[2] <= end_date.strftime('%Y-%m-%d')}
     target_pushups = {entry[2]: entry[3] for entry in user_entries if start_date.strftime('%Y-%m-%d') <= entry[2] <= end_date.strftime('%Y-%m-%d')}
+    partner_pushups = {entry[2]: entry[4] for entry in partner_entries if start_date.strftime('%Y-%m-%d') <= entry[2] <= end_date.strftime('%Y-%m-%d')}
 
-    partner_pushups = {
-        entry[2]: entry[4]
-        for entry in all_entries
-        if entry[0] == selected_partner_id and start_date.strftime('%Y-%m-%d') <= entry[2] <= end_date.strftime('%Y-%m-%d')
-    }
-
+    print("all_entries", all_entries)
     print("user_data", user_pushups)
     print("target_pushups", target_pushups)
     print("partner_pushups", partner_pushups)

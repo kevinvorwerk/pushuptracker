@@ -69,12 +69,12 @@
 
 
        <form method="POST" action="/select_user" style="text-align: center; margin: 20px auto;">
-   <label for="selected_user">Select User for Comparison:</label>
-   <select id="selected_user" name="selected_user">
+   <label for="selected_partner">Select User for Comparison:</label>
+   <select id="selected_partner" name="selected_partner">
        <option value="">Select User</option>
        {% for user in all_users %}
            <option value="{{ user[0] }}"
-               {% if user[0] == (selected_user|int) %}
+               {% if user[0] == (selected_partner|int) %}
                    selected
                {% endif %}>
                {{ user[1] }}
@@ -84,68 +84,64 @@
    <button type="submit">Show</button>
 </form>
 
+<form method="GET" action="/">
+    <label for="start">Start Date:</label>
+    <input type="date" id="start" name="start_date" value="{{ start_date }}">
 
+    <label for="end">End Date:</label>
+    <input type="date" id="end" name="end_date" value="{{ end_date }}">
+
+    <button type="submit">Update</button>
+</form>
 
 <canvas id="pushupChart"></canvas>
 
 <script>
    const ctx = document.getElementById('pushupChart').getContext('2d');
 
+   const dataLabels = {{ data_range | tojson }};
+   const userPushups = {{ user_pushups | tojson }};
+   const targetPushups = {{ target_pushups | tojson }};
+   const partnerPushups = {{ partner_pushups | tojson }};
+
    const data = {
-       labels: [
-           {% for entry in user_entries %}
-               '{{ entry[2] }}'{{ "," if not loop.last }}
-           {% endfor %}
-       ],
+       labels: dataLabels,
        datasets: [
        {
            label: 'Your Daily Push Ups',
-           data: [
-               {% for entry in user_entries %}
-                   {{ entry[4] }}{{ "," if not loop.last }}
-               {% endfor %}
-           ],
+           data: userPushups,
            borderColor: 'rgba(75, 192, 192, 1)',
            backgroundColor: 'rgba(75, 192, 192, 0.2)',
            borderWidth: 1
        }, 
        {
-           label: '{{ session["selected_username"] | default("Challenging User") }} Daily Push Ups',
-           data: [
-               {% for entry in all_entries %}
-                   {% if entry[1] == (session['selected_user'] | default(0, true) | int) %}
-                       {{ entry[4] }}{{ "," if not loop.last }}
-                   //{% else %}
-                   //   0{{ "," if not loop.last }}
-                   {% endif %}
-               {% endfor %}
-           ],
-           borderColor: 'rgba(255, 99, 132, 1)',
-           backgroundColor: 'rgba(255, 99, 132, 0.2)',
-           borderWidth: 1
-       }, 
-       {
            label: 'Target Push Ups',
-           data: [
-               {% for entry in user_entries %}
-                   {{ entry[3] }}{{ "," if not loop.last }}
-               {% endfor %}
-           ],
+           data: targetPushups,
            borderColor: 'rgba(255, 205, 86, 1)',
            backgroundColor: 'rgba(255, 205, 86, 0.2)',
            borderWidth: 1,
            borderDash: [5, 5]  // Dashed line for target
+       }, 
+       {
+           label: '{{ session["selected_partnername"] | default("Partner") }} Daily Push Ups',
+           data: partnerPushups,
+           borderColor: 'rgba(255, 99, 132, 1)',
+           backgroundColor: 'rgba(255, 99, 132, 0.2)',
+           borderWidth: 1
        }]
    };
 
    // Console logs for debugging
-   console.log("Selected User ID: ", "{{ session['selected_user'] }}");
+   console.log("Selected User ID: ", "{{ session['selected_partner'] }}");
    console.log("All Entries: ", {% if all_entries | length > 0 %}{{ all_entries | tojson }}{% else %}[]{% endif %}); // Print all entries
-   console.log("Your Daily Push Ups: ", data.datasets[0].data);
-   console.log("Challenging User Daily Push Ups: ", data.datasets[1].data);
+   console.log("Your Daily Push Ups: ", userPushups);
+   console.log("Target Daily Push Ups: ", targetPushups);
+   console.log("Partner Daily Push Ups: ", partnerPushups);
+   
+   console.log("Date Range:", dataLabels);
 
    const config = {
-       type: 'line',
+       type: 'bar',
        data: data,
        options: {
            responsive: true,

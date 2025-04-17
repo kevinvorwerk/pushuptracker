@@ -70,7 +70,7 @@ input[type="password"],
 input[type="date"],
 input[type="number"],
 select {
-   font-size: 14px;
+   font-size: 16px;
    font: 500;
    font-family: Arial, Helvetica, sans-serif;
    padding: 5px;

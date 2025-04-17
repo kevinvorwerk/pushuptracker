@@ -8,6 +8,36 @@ body {
    color: #333;
 }
 
+a {
+   display: block;
+   text-align: center;
+   margin-top: 20px;
+   color: #3498db;
+   text-decoration: none;
+}
+
+a:hover {
+   text-decoration: underline;
+}
+
+h1, h2, h3 {
+   text-align: center;  /* Center-aligns all headings */
+}
+
+ul {
+   list-style-type: none;
+   padding: 0;
+}
+
+ul li {
+   background-color: #ecf0f1;
+   margin: 5px;
+   padding: 10px;
+   border-radius: 5px;
+   display: flex;
+   justify-content: space-between;
+}
+
 .content-wrapper {
    padding: 20px;
    max-width: 800px;
@@ -97,20 +127,6 @@ button:hover {
    border-radius: 5px;
 }
 
-ul {
-   list-style-type: none;
-   padding: 0;
-}
-
-ul li {
-   background-color: #ecf0f1;
-   margin: 5px;
-   padding: 10px;
-   border-radius: 5px;
-   display: flex;
-   justify-content: space-between;
-}
-
 .entry {
    display: flex;
    justify-content: right;
@@ -177,19 +193,23 @@ ul li {
    margin-bottom: 10px;
 }
 
-a {
-   display: block;
-   text-align: center;
-   margin-top: 20px;
-   color: #3498db;
-   text-decoration: none;
+.chart-container {
+   width: 100%;
+   max-width: 1000px;
+   margin: auto;
+   position: relative;
+   height: 500px; /* Default height for desktop */
 }
 
-a:hover {
-   text-decoration: underline;
+canvas {
+   width: 100% !important;
+   height: 100% !important;
 }
 
-h1, h2, h3 {
-   text-align: center;  /* Center-aligns all headings */
+/* Mobile-specific height adjustment */
+@media (max-width: 768px) {
+   .chart-container {
+       height: 300px;  /* Adjust as needed for mobile */
+   }
 }
 

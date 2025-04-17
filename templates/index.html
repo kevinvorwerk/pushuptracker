@@ -133,7 +133,9 @@
         </script>
 
         <!-- Chart Section -->
-        <canvas id="pushupChart"></canvas>
+        <div class="chart-container">
+            <canvas id="pushupChart"></canvas>
+        </div>
 
         <script>
             const ctx = document.getElementById('pushupChart').getContext('2d');
@@ -184,6 +186,7 @@
                     data: data,
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false, // Allow canvas to fill its container
                         layout: {
                             padding: {
                                 top: 20,

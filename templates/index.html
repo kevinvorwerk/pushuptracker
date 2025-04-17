@@ -38,13 +38,12 @@
        </form>
       
        <!-- User Entry History -->
-       <h3>Your Push-up Entries</h3>
+       <h3 style="padding-top: 20px;">Your Push-up Entries</h3>
        <ul>
            {% for entry in user_entries %}
                <li class="entry">
 		            <p>
-		                {{ entry[2] }} - Target: {{ entry[3] }} - Done: {{ entry[4] }} 
-                        (User: {{ session['username'] }})
+		                {{ entry[2] }} - Target: {{ entry[3] }} - Done: {{ entry[4] }}
 		            </p>
                     <form method="POST" class="change-form" action="/fix">
                         <input type="number" name="done" placeholder="Adjust Done">
@@ -60,16 +59,8 @@
            {% endfor %}
         </ul>
 
-        <!-- Comparison Section -->
-        <h3>All Push-up Entries</h3>
-        <ul>
-            {% for entry in all_entries %}
-                <li>User Name: {{ entry[5] }} - Date: {{ entry[2] }} - Target: {{ entry[3] }} - Done: {{ entry[4] }}
-                </li>
-            {% endfor %}
-        </ul>
-
         <!-- Comparison Partner Selection -->
+        <h3 style="padding-top: 20px;">Performance Overview</h3>
         <form method="POST" action="/select_user" class="box-form">
             <label for="selected_partner">Comparison Partner:</label>
             <select id="selected_partner" name="selected_partner">
@@ -87,24 +78,26 @@
         </form>
 
         <!-- Data Range Selection -->
-        <form method="GET" action="/" class="date-form">
+        <div class="date-container">
+            <form method="GET" action="/" class="date-form">
 
-            <select id="preset_dates" name="preset_dates" onchange="updateDatesFromPreset()">
-                <option value="7" {{ 'selected' if preset_dates == '7' }}>Last 7 Days</option>
-                <option value="14" {{ 'selected' if preset_dates == '14' }}>Last 14 Days</option>
-                <option value="30" {{ 'selected' if preset_dates == '30' }}>Last 30 Days</option>
-                <option value="90" {{ 'selected' if preset_dates == '90' }}>Last 90 Days</option>
-                <option value="" {{ 'selected' if preset_dates == '' }}>Custom</option>
-            </select>
+                <select id="preset_dates" name="preset_dates" onchange="updateDatesFromPreset()">
+                    <option value="7" {{ 'selected' if preset_dates == '7' }}>Last 7 Days</option>
+                    <option value="14" {{ 'selected' if preset_dates == '14' }}>Last 14 Days</option>
+                    <option value="30" {{ 'selected' if preset_dates == '30' }}>Last 30 Days</option>
+                    <option value="90" {{ 'selected' if preset_dates == '90' }}>Last 90 Days</option>
+                    <option value="" {{ 'selected' if preset_dates == '' }}>Custom</option>
+                </select>
 
-            <label for="start"></label>
-            <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+                <label for="start"></label>
+                <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
 
-            <label for="end">-</label>
-            <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
+                <label for="end">-</label>
+                <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
 
-            <button type="submit">Update</button>
-        </form>
+                <button type="submit">Update</button>
+            </form>
+        </div>
 
         <script>
             function updateDatesFromPreset() {
@@ -151,6 +144,8 @@
                 {
                     label: 'Your Daily Push Ups',
                     data: userPushups,
+
+                    type: 'bar',
                     borderColor: 'rgba(75, 192, 192, 1)',
                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
                     borderWidth: 1
@@ -158,14 +153,20 @@
                 {
                     label: 'Target Push Ups',
                     data: targetPushups,
+
+                    type: 'line',
                     borderColor: 'rgba(255, 205, 86, 1)',
                     backgroundColor: 'rgba(255, 205, 86, 0.2)',
-                    borderWidth: 1,
-                    borderDash: [5, 5]  // Dashed line for target
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0
                 }, 
                 {
                     label: '{{ session["selected_partnername"] | default("Partner") }} Daily Push Ups',
                     data: partnerPushups,
+
+                    type: 'bar',
                     borderColor: 'rgba(255, 99, 132, 1)',
                     backgroundColor: 'rgba(255, 99, 132, 0.2)',
                     borderWidth: 1
@@ -182,7 +183,6 @@
             console.log("Date Range:", dataLabels);
 
             const config = {
-                    type: 'bar',
                     data: data,
                     options: {
                         responsive: true,
@@ -208,6 +208,15 @@
 
             const pushupChart = new Chart(ctx, config);
         </script>
+
+        <!-- Comparison Section -->
+        <h3 style="padding-top: 10px;">All Push-up Entries</h3>
+        <ul>
+            {% for entry in all_entries %}
+                <li>{{ entry[5] }} - Date: {{ entry[2] }} - Target: {{ entry[3] }} - Done: {{ entry[4] }}
+                </li>
+            {% endfor %}
+        </ul>
 
    </div>
 

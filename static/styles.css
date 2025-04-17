@@ -21,7 +21,7 @@ a:hover {
 }
 
 h1, h2, h3 {
-   text-align: center;  /* Center-aligns all headings */
+   text-align: center;
 }
 
 ul {
@@ -74,7 +74,6 @@ select {
    font: 500;
    font-family: Arial, Helvetica, sans-serif;
    padding: 5px;
-   margin-bottom: 10px;
    border: 1px solid #ccc;
    border-radius: 5px;
 }
@@ -93,6 +92,7 @@ select {
 .box-form input[type="date"],
 .box-form input[type="number"] {
    width: calc(100% - 10px);
+   margin-bottom: 10px;
 }
 
 .box-form button{
@@ -188,8 +188,18 @@ button:hover {
    border-radius: 5px;
 }
 
+.date-container {
+   width: 100%;
+   margin: auto;
+   position: relative;
+   display: flex;
+   justify-content: center;
+}
+
 .date-form {
-   display: inline;
+   display: flex;
+   gap: 10px;
+   align-items: center;
    margin-bottom: 10px;
 }
 

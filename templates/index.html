@@ -36,28 +36,6 @@
            <input type="number" name="done" placeholder="Done" required>
            <button type="submit">Add</button>
        </form>
-      
-       <!-- User Entry History -->
-       <h3 style="padding-top: 20px;">Your Push-up Entries</h3>
-       <ul>
-           {% for entry in user_entries %}
-               <li class="entry">
-		            <p>
-		                {{ entry[2] }} - Target: {{ entry[3] }} - Done: {{ entry[4] }}
-		            </p>
-                    <form method="POST" class="change-form" action="/fix">
-                        <input type="number" name="done" placeholder="Adjust Done">
-                        <input type="hidden" name="date" value="{{ entry[2] }}">
-                        <button type="submit">Fix</button>
-                    </form>
-		            <form method="POST" class="delete-form" action="/delete_entry">
-                        <input type="hidden" name="date" value="{{ entry[2] }}">
-                        <input type="hidden" name="user_id" value="{{ entry[1] }}"> <!-- User ID for validation -->
-                        <button type="submit">X</button>
-                    </form>
-               </li>
-           {% endfor %}
-        </ul>
 
         <!-- Comparison Partner Selection -->
         <h3 style="padding-top: 20px;">Performance Overview</h3>
@@ -209,13 +187,26 @@
             const pushupChart = new Chart(ctx, config);
         </script>
 
-        <!-- Comparison Section -->
-        <h3 style="padding-top: 10px;">All Push-up Entries</h3>
-        <ul>
-            {% for entry in all_entries %}
-                <li>{{ entry[5] }} - Date: {{ entry[2] }} - Target: {{ entry[3] }} - Done: {{ entry[4] }}
-                </li>
-            {% endfor %}
+        <!-- User Entry History -->
+       <h3 style="padding-top: 20px;">Your Push-up Entries</h3>
+       <ul>
+           {% for entry in user_entries %}
+               <li class="entry">
+		            <p>
+		                {{ entry[2] }} - Target: {{ entry[3] }} - Done: {{ entry[4] }}
+		            </p>
+                    <form method="POST" class="change-form" action="/fix">
+                        <input type="number" name="done" placeholder="Adjust Done">
+                        <input type="hidden" name="date" value="{{ entry[2] }}">
+                        <button type="submit">Fix</button>
+                    </form>
+		            <form method="POST" class="delete-form" action="/delete_entry">
+                        <input type="hidden" name="date" value="{{ entry[2] }}">
+                        <input type="hidden" name="user_id" value="{{ entry[1] }}"> <!-- User ID for validation -->
+                        <button type="submit">X</button>
+                    </form>
+               </li>
+           {% endfor %}
         </ul>
 
    </div>

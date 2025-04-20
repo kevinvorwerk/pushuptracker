@@ -87,6 +87,12 @@ select {
    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
+@media only screen and (max-width: 768px) {
+   .box-form {
+      max-width: 100%;
+   }
+}
+
 .box-form input[type="text"],
 .box-form input[type="password"],
 .box-form input[type="date"],
@@ -188,6 +194,10 @@ button:hover {
    border-radius: 5px;
 }
 
+.login-container {
+   margin: 20px;
+}
+
 .date-container {
    width: 100%;
    margin: auto;
@@ -198,6 +208,7 @@ button:hover {
 
 .date-form {
    display: flex;
+   flex-wrap: wrap;
    gap: 10px;
    align-items: center;
    margin-bottom: 10px;
